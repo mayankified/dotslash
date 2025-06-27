@@ -70,7 +70,7 @@ export default function DietPlanForm() {
 
     try {
       // 5. Make API call to /diet-plan
-      const response = await fetch('https://dot.etoqe.shop/diet-plan', {
+      const response = await fetch('http://127.0.0.1:8000/diet-plan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -13,7 +13,7 @@ const Myth = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    fetch("https://dot.etoqe.shop/scrape")
+    fetch("http://127.0.0.1:8000/scrape")
       .then((response) => response.json())
       .then((data) => {
         setMyths(data.myths);

@@ -34,7 +34,7 @@ export default function MedicalReport() {
         formData.append("file", file);
 
         try {
-            const response = await fetch("https://dot.etoqe.shop/analyze-report", {
+            const response = await fetch("http://127.0.0.1:8000/analyze-report", {
                 method: "POST",
                 body: formData,
             });

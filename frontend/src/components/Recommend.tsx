@@ -35,7 +35,7 @@ export default function RecommendHealthInsurance() {
         setSchemeDetails(null);
 
         try {
-            const response = await fetch("https://dot.etoqe.shop/recommend", {
+            const response = await fetch("http://127.0.0.1:8000/recommend", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

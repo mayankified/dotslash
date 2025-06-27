@@ -12,33 +12,33 @@ import json
 import io
 import requests
 from bs4 import BeautifulSoup
-# Load environment variables
+
 load_dotenv()
 
-# Initialize FastAPI app
+
 app = FastAPI(title="Doctor-Patient Chat API", version="1.0")
-# Enable CORS Middleware
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "*"
-    ],  # Change this to your frontend URL for security (e.g., ["http://localhost:3000"])
+    ],  
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods (POST, GET, etc.)
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],  
+    allow_headers=["*"],  
 )
-# Initialize ChatOpenAI with Groq API
+
 llm = ChatOpenAI(
     base_url="https://api.groq.com/openai/v1",
     api_key=os.getenv("GROQ_API_KEY"),
     model="llama-3.3-70b-versatile",
 )
 
-# Memory storage for chat history (can be expanded with a database)
+
 session_memory = {}
 
 
-# Define request schema
+
 class ChatRequest(BaseModel):
     session_id: str
     patient_message: str
@@ -49,16 +49,16 @@ async def chat_with_doctor(request: ChatRequest):
     session_id = request.session_id
     patient_message = request.patient_message
 
-    # Initialize memory if session doesn't exist
+    
     if session_id not in session_memory:
         session_memory[session_id] = ConversationBufferMemory()
 
     memory = session_memory[session_id]
 
-    # Create conversation chain
+    
     conversation = ConversationChain(llm=llm, memory=memory)
 
-    # Construct doctor role
+    
     doctor_prompt = (
         "You are a professional and empathetic doctor. "
         "Engage in a friendly and informative conversation with the patient. "
@@ -69,7 +69,7 @@ async def chat_with_doctor(request: ChatRequest):
     )
 
     try:
-        # Generate response
+        
         response = conversation.invoke(input=doctor_prompt)
         doctor_response = response.get(
             "response", "I'm here to help! How can I assist you?"
@@ -79,7 +79,7 @@ async def chat_with_doctor(request: ChatRequest):
             "session_id": session_id,
             "patient_message": patient_message,
             "doctor_response": doctor_response,
-            "chat_history": memory.buffer,  # Returns chat history
+            "chat_history": memory.buffer,  
         }
 
     except Exception as e:
@@ -123,15 +123,15 @@ async def detect_disease(request: DiseaseDetectionRequest):
 
         response = llm.invoke(detection_prompt)
 
-        # Ensure response is properly structured
+        
         if hasattr(response, "content"):
             response_content = response.content.strip()
         else:
             response_content = str(response).strip()
 
-        # print("Raw LLM Response:", response_content)  # Debugging log
+        
 
-        # Find the first `{` and last `}` to extract clean JSON
+        
         start_index = response_content.find("{")
         end_index = response_content.rfind("}")
 
@@ -142,7 +142,7 @@ async def detect_disease(request: DiseaseDetectionRequest):
 
         clean_json = response_content[start_index : end_index + 1]
 
-        # Parse JSON safely
+        
         try:
             parsed_response = json.loads(clean_json)
         except json.JSONDecodeError:
@@ -186,13 +186,13 @@ async def generate_diet_plan(request: DietPlanRequest):
     try:
         response = llm.invoke(diet_prompt)
 
-        # If the response is from a chat model, you'll likely have `response.content`.
+        
         if hasattr(response, "content"):
             response_content = response.content.strip()
         else:
             response_content = str(response).strip()
 
-        # Simply return the text as the diet plan. 
+        
         return {
             "disease_name": request.disease_name,
             "condition": request.condition,
@@ -202,22 +202,22 @@ async def generate_diet_plan(request: DietPlanRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-# Run with: uvicorn app:app --reload
 
-# Define OCR request handler
+
+
 @app.post("/analyze-report")
 async def analyze_medical_report(file: UploadFile = File(...)):
     try:
-        # Load image
+        
         image = Image.open(io.BytesIO(await file.read()))
         
-        # Perform OCR
+        
         extracted_text = pytesseract.image_to_string(image)
         
         if not extracted_text.strip():
             raise HTTPException(status_code=400, detail="No readable text found in the image.")
         
-        # Generate medical insights
+        
         medical_insights_prompt = (
             "You are an AI medical assistant. Based on the extracted text from a medical report, "
             "identify key medical terms, possible diagnoses, and their implications. "
@@ -227,13 +227,13 @@ async def analyze_medical_report(file: UploadFile = File(...)):
         
         response = llm.invoke(medical_insights_prompt)
         
-        # Process response
+        
         if hasattr(response, "content"):
             response_content = response.content.strip()
         else:
             response_content = str(response).strip()
         
-        # Extract JSON from response
+        
         start_index = response_content.find("{")
         end_index = response_content.rfind("}")
 
@@ -254,10 +254,10 @@ async def analyze_medical_report(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-    # Temporary storage for scraped data
+    
 scraped_data = []
 
-# Function to scrape data
+
 def scrape_myths():
     global scraped_data
     url = 'https://www.medicalnewstoday.com/'
@@ -266,13 +266,13 @@ def scrape_myths():
     
     myth_links = soup.find_all('a', class_='css-xqmvw1 css-i4o77u')
     
-    scraped_data = []  # Clear old data
+    scraped_data = []  
     for myth in myth_links:
         text = myth.get_text(strip=True)
         link = myth.get('href')
         scraped_data.append({"text": text, "link": link})
 
-# Route to scrape and store data
+
 @app.get("/scrape")
 def scrape():
     scrape_myths()  
@@ -283,13 +283,13 @@ import joblib
 import pandas as pd
 from pydantic import BaseModel
 
-# Load the trained model and label encoders
+
 model = joblib.load("health_scheme_recommender.pkl")
 label_encoders = joblib.load("label_encoders.pkl")
 
-# Initialize FastAPI app
 
-# Define input schema
+
+
 class HealthSchemeInput(BaseModel):
     age: int
     income: int
@@ -298,24 +298,23 @@ class HealthSchemeInput(BaseModel):
     socio_status: str
     family_size: int
 
-# Define API endpoint
+
 @app.post("/recommend")
 def recommend_scheme(data: HealthSchemeInput):
-    # Convert input to DataFrame
+    
     input_data = pd.DataFrame([[
         data.age, data.income, data.employment_type,
         data.bank_account, data.socio_status, data.family_size
     ]], columns=["Age", "Income", "Employment Type", "Bank Account", "Socio-Economic Status", "Family Size"])
     
-    # Encode categorical features
+    
     input_data["Employment Type"] = label_encoders["Employment Type"].transform([data.employment_type])[0]
     input_data["Bank Account"] = label_encoders["Bank Account"].transform([data.bank_account])[0]
     input_data["Socio-Economic Status"] = label_encoders["Socio-Economic Status"].transform([data.socio_status])[0]
     
-    # Predict scheme
+    
     scheme_index = model.predict(input_data)[0]
     scheme = label_encoders["Recommended Scheme"].inverse_transform([scheme_index])[0]
     
     return {"Recommended Scheme": scheme}
 
-# Run API using: uvicorn filename:app --reload

@@ -16,6 +16,7 @@ import TrackPeriod from './components/TrackPeriod';
 import HealthInsurance from './components/Insurance';
 import MedicalReport from './components/Report';
 import RecommendHealthInsurance from './components/Recommend';
+import ConsentSimplifier from './components/ConsentSimplifier';
 
 function BackButton() {
   const location = useLocation();
@@ -61,6 +62,7 @@ function App() {
                 <Route path="/insurance" element={<HealthInsurance />} />
                 <Route path="/diet" element={<DietPlanForm />} />
                 <Route path="/hospital-beds" element={<HospitalBeds />} />
+                <Route path="/consent-simplifier" element={<ConsentSimplifier />} />
                 <Route path="/report" element={<MedicalReport />} />
                 <Route path="/track" element={<TrackPeriod />} />
                 <Route path="/blood-donor" element={<BloodDonor />} />
